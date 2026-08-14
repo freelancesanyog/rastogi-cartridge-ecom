@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#312e81" />
+    </linearGradient>
+    <linearGradient id="paperGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f1f5f9" />
+    </linearGradient>
+    <linearGradient id="outputGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#f43f5e" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Container -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+
+  <!-- Printer Icon Art -->
+  <g transform="translate(86, 86)">
+    <!-- Top Input Paper Sheet -->
+    <rect x="90" y="30" width="160" height="110" rx="12" fill="url(#paperGrad)" />
+    <line x1="115" y1="60" x2="225" y2="60" stroke="#6366f1" stroke-width="8" stroke-linecap="round" />
+    <line x1="115" y1="85" x2="195" y2="85" stroke="#94a3b8" stroke-width="8" stroke-linecap="round" />
+
+    <!-- Printer Body Main Shell -->
+    <rect x="30" y="120" width="280" height="135" rx="28" fill="#ffffff" />
+    <!-- Inner Dark Control Slot -->
+    <rect x="50" y="142" width="240" height="90" rx="18" fill="#0f172a" />
+
+    <!-- CMYK Ink Cartridge Status Indicators -->
+    <circle cx="85" cy="187" r="15" fill="#38bdf8" />
+    <circle cx="132" cy="187" r="15" fill="#f43f5e" />
+    <circle cx="179" cy="187" r="15" fill="#fbbf24" />
+    <circle cx="226" cy="187" r="15" fill="#64748b" />
+
+    <!-- Power / Status Light -->
+    <circle cx="262" cy="158" r="5" fill="#22c55e" />
+
+    <!-- Output Paper Tray Banner -->
+    <path d="M 70 240 L 270 240 L 255 295 L 85 295 Z" fill="url(#outputGrad)" />
+    <rect x="95" y="252" width="150" height="26" rx="6" fill="#ffffff" opacity="0.9" />
+  </g>
+</svg>
