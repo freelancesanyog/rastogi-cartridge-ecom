@@ -1,7 +1,5 @@
 import logging
 
-from django.core.exceptions import ValidationError
-
 from apps.catalog.models import Product
 from apps.reviews.models import ProductReview
 

@@ -93,7 +93,7 @@ def test_concurrent_stock_deduction():
     # Assert exactly 1 purchase succeeded and 1 failed with lock or stock error
     assert len(results) == 1
     assert len(errors) == 1
-    assert isinstance(errors[0], (InsufficientStockError, OperationalError))
+    assert isinstance(errors[0], InsufficientStockError | OperationalError)
 
     # Assert final stock quantity is zero
     record.refresh_from_db()

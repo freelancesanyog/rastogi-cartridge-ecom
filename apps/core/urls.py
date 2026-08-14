@@ -1,5 +1,6 @@
 from django.urls import path
-from apps.core.views import HealthCheckView, ContactView
+
+from apps.core.views import ContactView, HealthCheckView
 
 app_name = "core"
 

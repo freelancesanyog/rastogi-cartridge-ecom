@@ -6,7 +6,6 @@ from django.urls import reverse
 from rest_framework import status
 
 from apps.catalog.models import Category, Product
-from apps.reviews.models import ProductReview
 
 User = get_user_model()
 
@@ -17,7 +16,7 @@ def test_review_creation_and_moderation(client):
     Test customer review submission (defaults to is_approved=False),
     public listing isolation (only approved reviews returned), and admin moderation.
     """
-    user = User.objects.create_user(email="reviewer@example.com", password="Password123!")
+    User.objects.create_user(email="reviewer@example.com", password="Password123!")
     cat = Category.objects.create(name="Headphones")
     product = Product.objects.create(
         sku="HEAD-01",

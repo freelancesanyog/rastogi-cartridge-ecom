@@ -156,7 +156,7 @@ def test_live_stock_api_endpoint_uncached_and_throttled(client):
     v2 = ProductVariant.objects.create(product=product, sku="MON-100-WHT", stock=0)
 
     sr1 = StockRecord.objects.create(product=product, variant=v1, quantity=15, reserved_quantity=0, low_stock_threshold=5)
-    sr2 = StockRecord.objects.create(product=product, variant=v2, quantity=0, reserved_quantity=0, low_stock_threshold=5)
+    StockRecord.objects.create(product=product, variant=v2, quantity=0, reserved_quantity=0, low_stock_threshold=5)
 
     stock_url = reverse("catalog:product-stock", kwargs={"slug": product.slug})
 
