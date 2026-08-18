@@ -9,7 +9,7 @@ import { useLiveStock } from "@/hooks/useLiveStock";
 interface ProductVariant {
   id: number;
   sku: string;
-  attributes: Record<string, any>;
+  attributes: Record<string, unknown>;
   price_override: string | null;
   effective_price: string;
   stock: number;

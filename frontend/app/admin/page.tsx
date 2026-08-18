@@ -20,9 +20,32 @@ import {
 } from "lucide-react";
 import { fetchApi } from "@/lib/api-client";
 
+interface AdminProduct {
+  id: number;
+  sku: string;
+  name: string;
+  slug: string;
+  price: string;
+  mrp?: string;
+  stock?: number;
+  brand?: { name: string; slug: string };
+  category?: { name: string; slug: string };
+  stock_status?: {
+    available_quantity?: number;
+    in_stock?: boolean;
+  };
+}
+
+interface AdminCategory {
+  id: number;
+  name: string;
+  slug: string;
+  parent_id?: number;
+}
+
 export default function AdminDashboardPage() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"products" | "categories" | "orders">("products");
@@ -33,11 +56,13 @@ export default function AdminDashboardPage() {
     setIsLoading(true);
     try {
       const [prodData, catData] = await Promise.all([
-        fetchApi("/catalog/products/"),
-        fetchApi("/catalog/categories/"),
+        fetchApi<{ results?: AdminProduct[] } | AdminProduct[]>("/catalog/products/"),
+        fetchApi<{ results?: AdminCategory[] } | AdminCategory[]>("/catalog/categories/"),
       ]);
-      setProducts(prodData.results || prodData || []);
-      setCategories(catData.results || catData || []);
+      const prods = Array.isArray(prodData) ? prodData : prodData?.results || [];
+      const cats = Array.isArray(catData) ? catData : catData?.results || [];
+      setProducts(prods);
+      setCategories(cats);
     } catch {
       setProducts([]);
       setCategories([]);
@@ -47,7 +72,34 @@ export default function AdminDashboardPage() {
   };
 
   useEffect(() => {
-    loadData();
+    let isMounted = true;
+    const initialLoad = async () => {
+      try {
+        const [prodData, catData] = await Promise.all([
+          fetchApi<{ results?: AdminProduct[] } | AdminProduct[]>("/catalog/products/"),
+          fetchApi<{ results?: AdminCategory[] } | AdminCategory[]>("/catalog/categories/"),
+        ]);
+        const prods = Array.isArray(prodData) ? prodData : prodData?.results || [];
+        const cats = Array.isArray(catData) ? catData : catData?.results || [];
+        if (isMounted) {
+          setProducts(prods);
+          setCategories(cats);
+        }
+      } catch {
+        if (isMounted) {
+          setProducts([]);
+          setCategories([]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+    initialLoad();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const filteredProducts = products.filter((p) =>

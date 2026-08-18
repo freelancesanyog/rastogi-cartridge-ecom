@@ -5,8 +5,8 @@ import Image from "next/image";
 import { Image as ImageIcon } from "lucide-react";
 import { getImageUrl } from "@/lib/utils";
 
-interface ProductImage {
-  id: number;
+export interface ProductImage {
+  id?: number;
   image: string;
   alt_text?: string;
   is_primary?: boolean;

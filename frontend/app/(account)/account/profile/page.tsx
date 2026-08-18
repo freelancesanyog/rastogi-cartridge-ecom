@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuthStore } from "@/store/auth-store";
 import { fetchApi } from "@/lib/api-client";
 import { User, Mail, Phone, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
@@ -8,17 +8,15 @@ import { User, Mail, Phone, CheckCircle, AlertCircle, Loader2 } from "lucide-rea
 export default function ProfilePage() {
   const { user, setAuth } = useAuthStore();
 
+  const [prevUser, setPrevUser] = useState(user);
   const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    phone_number: "",
+    first_name: user?.first_name || "",
+    last_name: user?.last_name || "",
+    phone_number: user?.phone_number || "",
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
+  if (user !== prevUser) {
+    setPrevUser(user);
     if (user) {
       setFormData({
         first_name: user.first_name || "",
@@ -26,7 +24,11 @@ export default function ProfilePage() {
         phone_number: user.phone_number || "",
       });
     }
-  }, [user]);
+  }
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,8 +53,9 @@ export default function ProfilePage() {
       setAuth(updatedUser, "");
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
-      setError(err.message || "Failed to update profile.");
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || "Failed to update profile.";
+      setError(errorMsg);
     } finally {
       setIsSubmitting(false);
     }

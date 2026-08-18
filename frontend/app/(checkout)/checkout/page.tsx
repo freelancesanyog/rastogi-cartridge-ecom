@@ -3,13 +3,26 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { Truck, ShieldCheck, CreditCard, Tag, ArrowRight, Check, AlertCircle, Loader2 } from "lucide-react";
+import { Truck, ShieldCheck, Tag, ArrowRight, Check, AlertCircle, Loader2 } from "lucide-react";
 import { fetchApi } from "@/lib/api-client";
-import { useAuthStore } from "@/store/auth-store";
+
+interface CartResponse {
+  items?: Array<{
+    id: number;
+    quantity: number;
+    product: { name: string };
+    price_at_add: string;
+    line_total: string;
+  }>;
+  item_count?: number;
+  coupon_code?: string;
+  discount_amount?: string | number | any;
+  subtotal?: string | number;
+  total_amount?: string | number;
+}
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
 
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [couponCode, setCouponCode] = useState("");
@@ -30,7 +43,7 @@ export default function CheckoutPage() {
   });
 
   // Fetch Cart
-  const { data: cart, refetch: refetchCart } = useQuery({
+  const { data: cart, refetch: refetchCart } = useQuery<CartResponse>({
     queryKey: ["checkout-cart"],
     queryFn: () => fetchApi("/cart/"),
   });
@@ -49,8 +62,9 @@ export default function CheckoutPage() {
       });
       setCouponCode("");
       refetchCart();
-    } catch (err: any) {
-      setCouponError(err.message || "Invalid coupon code.");
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || "Invalid coupon code.";
+      setCouponError(errorMsg);
     } finally {
       setCouponLoading(false);
     }
@@ -60,8 +74,9 @@ export default function CheckoutPage() {
     try {
       await fetchApi("/promotions/remove/", { method: "POST" });
       refetchCart();
-    } catch (err: any) {
-      alert(err.message || "Failed to remove coupon");
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || "Failed to remove coupon";
+      alert(errorMsg);
     }
   };
 
@@ -86,8 +101,9 @@ export default function CheckoutPage() {
       });
 
       router.push(`/checkout/confirmation?order=${order.order_number}`);
-    } catch (err: any) {
-      setCheckoutError(err.message || "Failed to place order. Please try again.");
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || "Failed to place order. Please try again.";
+      setCheckoutError(errorMsg);
     } finally {
       setIsSubmitting(false);
     }

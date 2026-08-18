@@ -27,7 +27,6 @@ export function useLiveStock(productSlug: string, initialStock?: LiveStockData) 
     }
 
     try {
-      setIsLoading(true);
       const data = await fetchApi<LiveStockData>(
         `/catalog/products/${productSlug}/stock/?_t=${Date.now()}`
       );
@@ -50,8 +49,12 @@ export function useLiveStock(productSlug: string, initialStock?: LiveStockData) 
   useEffect(() => {
     isMountedRef.current = true;
 
-    // Initial fetch on mount
-    fetchLiveStock();
+    // Async initial fetch on mount
+    Promise.resolve().then(() => {
+      if (isMountedRef.current) {
+        fetchLiveStock();
+      }
+    });
 
     // 4-second HTTP polling loop
     const intervalId = setInterval(fetchLiveStock, 4000);

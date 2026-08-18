@@ -35,8 +35,9 @@ export default function AddToCartButton({ productId, variantId, disabled }: AddT
       setIsSuccess(true);
       openCart();
       setTimeout(() => setIsSuccess(false), 2000);
-    } catch (err: any) {
-      showTopAlert(err.message || "Failed to add item to cart.", "warning");
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || "Failed to add item to cart.";
+      showTopAlert(errorMsg, "warning");
     } finally {
       setIsLoading(false);
     }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Printer, Sparkles, Loader2 } from "lucide-react";
+import { Search, Sparkles, Loader2 } from "lucide-react";
 import { fetchApi } from "@/lib/api-client";
 
 interface Brand {
@@ -44,27 +44,40 @@ export default function CartridgeSearchWidget() {
 
   useEffect(() => {
     if (!selectedBrandSlug) {
-      setModels([]);
-      setSelectedModelSlug("");
       return;
     }
 
+    let isMounted = true;
     async function loadModels() {
       setLoadingModels(true);
       try {
-        const res = await fetchApi<any>(
+        const res = await fetchApi<{ results?: DeviceModel[] } | DeviceModel[]>(
           `/compatibility/devices/?brand=${selectedBrandSlug}`
         );
-        const list = res?.results || res || [];
-        setModels(Array.isArray(list) ? list : []);
+        const list = Array.isArray(res) ? res : res?.results || [];
+        if (isMounted) {
+          setModels(list);
+        }
       } catch {
-        setModels([]);
+        if (isMounted) setModels([]);
       } finally {
-        setLoadingModels(false);
+        if (isMounted) setLoadingModels(false);
       }
     }
     loadModels();
+    return () => {
+      isMounted = false;
+    };
   }, [selectedBrandSlug]);
+
+  const handleBrandSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const slug = e.target.value;
+    setSelectedBrandSlug(slug);
+    setSelectedModelSlug("");
+    if (!slug) {
+      setModels([]);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,7 +109,7 @@ export default function CartridgeSearchWidget() {
         <div className="relative">
           <select
             value={selectedBrandSlug}
-            onChange={(e) => setSelectedBrandSlug(e.target.value)}
+            onChange={handleBrandSelectChange}
             disabled={loadingBrands}
             className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all appearance-none cursor-pointer"
           >

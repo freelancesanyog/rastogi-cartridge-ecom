@@ -1,6 +1,5 @@
 import { Metadata } from "next";
-import Link from "next/link";
-import { Printer, Search, Sparkles } from "lucide-react";
+import { Printer, Sparkles } from "lucide-react";
 import CartridgeSearchWidget from "@/components/shop/CartridgeSearchWidget";
 import { fetchApi } from "@/lib/api-client";
 
@@ -11,11 +10,17 @@ export const metadata: Metadata = {
   description: "Find exact fitting cartridges for HP, Canon, Epson, Brother, and Dell printers.",
 };
 
+interface BrandItem {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 export default async function CompatibilityIndexPage() {
-  let brands: any[] = [];
+  let brands: BrandItem[] = [];
   try {
-    const res = await fetchApi<any>("/compatibility/brands/");
-    brands = res.results || [];
+    const res = await fetchApi<{ results?: BrandItem[] } | BrandItem[]>("/compatibility/brands/");
+    brands = Array.isArray(res) ? res : res.results || [];
   } catch {
     brands = [];
   }
@@ -44,7 +49,7 @@ export default async function CompatibilityIndexPage() {
       <div className="space-y-6">
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">Browse by Printer Brand</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {brands.map((brand: any) => (
+          {brands.map((brand: BrandItem) => (
             <div
               key={brand.id}
               className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center space-y-2"

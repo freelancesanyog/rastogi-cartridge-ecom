@@ -46,8 +46,9 @@ export default function LoginPage() {
 
       // 4. Redirect to home or account page
       router.push("/");
-    } catch (err: any) {
-      setError(err.message || "Invalid email or password. Please try again.");
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || "Invalid email or password. Please try again.";
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }

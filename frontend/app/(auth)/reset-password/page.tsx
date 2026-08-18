@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Lock, ArrowLeft, CheckCircle, AlertCircle, Loader2, KeyRound } from "lucide-react";
@@ -10,22 +10,14 @@ function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [uid, setUid] = useState("");
-  const [token, setToken] = useState("");
+  const uid = searchParams.get("uid") || "";
+  const token = searchParams.get("token") || "";
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const urlUid = searchParams.get("uid");
-    const urlToken = searchParams.get("token");
-
-    if (urlUid) setUid(urlUid);
-    if (urlToken) setToken(urlToken);
-  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,8 +55,9 @@ function ResetPasswordForm() {
       setTimeout(() => {
         router.push("/login");
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || "Failed to reset password. Link may be expired or invalid.");
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || "Failed to reset password. Link may be expired or invalid.";
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }

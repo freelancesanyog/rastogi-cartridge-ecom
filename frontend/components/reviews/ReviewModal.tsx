@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Star, X, Loader2, MessageSquare, CheckCircle } from "lucide-react";
 import { fetchApi } from "@/lib/api-client";
 import { toast } from "react-toastify";
@@ -35,15 +35,15 @@ export default function ReviewModal({
   const [comment, setComment] = useState<string>(existingReview?.comment || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (existingReview) {
-      setRating(existingReview.rating);
-      setComment(existingReview.comment);
-    } else {
-      setRating(5);
-      setComment("");
-    }
-  }, [existingReview, isOpen]);
+  const [prevReview, setPrevReview] = useState(existingReview);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+
+  if (existingReview !== prevReview || isOpen !== prevIsOpen) {
+    setPrevReview(existingReview);
+    setPrevIsOpen(isOpen);
+    setRating(existingReview?.rating || 5);
+    setComment(existingReview?.comment || "");
+  }
 
   if (!isOpen) return null;
 
@@ -74,8 +74,9 @@ export default function ReviewModal({
       toast.success("Thank you! Your product review has been submitted successfully.");
       if (onSuccess) onSuccess();
       onClose();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to submit review. Please try again.");
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || "Failed to submit review. Please try again.";
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }

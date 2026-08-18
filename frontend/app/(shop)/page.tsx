@@ -3,17 +3,12 @@ import Image from "next/image";
 import { Metadata } from "next";
 import {
   Printer,
-  Sparkles,
-  ArrowRight,
   Monitor,
   Keyboard,
   HardDrive,
-  ShieldCheck,
   Star,
-  Zap,
   Truck,
   Percent,
-  Clock,
   Cable,
 } from "lucide-react";
 import CartridgeSearchWidget from "@/components/shop/CartridgeSearchWidget";
@@ -35,11 +30,25 @@ export const metadata: Metadata = {
   },
 };
 
+interface HomeProduct {
+  id: number;
+  name: string;
+  slug: string;
+  price: string;
+  mrp?: string;
+  brand?: { name: string; slug: string };
+  primary_image?: { image?: string } | null;
+  discount_percentage?: number;
+  stock_status?: {
+    in_stock: boolean;
+  };
+}
+
 export default async function ShopHomePage() {
-  let products: any[] = [];
+  let products: HomeProduct[] = [];
   try {
-    const res = await fetchApi<{ results: any[] }>("/catalog/products/");
-    products = res.results || [];
+    const res = await fetchApi<{ results?: HomeProduct[] } | HomeProduct[]>("/catalog/products/");
+    products = Array.isArray(res) ? res : res.results || [];
   } catch {
     products = [];
   }
@@ -75,7 +84,7 @@ export default async function ShopHomePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {products.slice(0, 8).map((product: any) => (
+              {products.slice(0, 8).map((product: HomeProduct) => (
                 <Link
                   key={product.id}
                   href={`/product/${product.slug}`}
@@ -94,7 +103,7 @@ export default async function ShopHomePage() {
                       <Printer className="w-12 h-12 text-slate-300 dark:text-slate-700" />
                     )}
 
-                    {product.discount_percentage > 0 && (
+                    {!!product.discount_percentage && product.discount_percentage > 0 && (
                       <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-rose-600 text-white text-[10px] font-black">
                         {product.discount_percentage}% OFF
                       </span>

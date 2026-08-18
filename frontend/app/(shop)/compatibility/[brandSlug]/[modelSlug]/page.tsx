@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Printer, ChevronRight, CheckCircle, Sparkles } from "lucide-react";
+import { Printer, ChevronRight, CheckCircle } from "lucide-react";
 import { fetchApi } from "@/lib/api-client";
 import { generateBreadcrumbJsonLd } from "@/lib/seo";
 import { getImageUrl } from "@/lib/utils";
@@ -13,10 +13,33 @@ interface CompatibilityResultProps {
   params: Promise<{ brandSlug: string; modelSlug: string }> | { brandSlug: string; modelSlug: string };
 }
 
+interface DeviceDetail {
+  id?: number;
+  model_name?: string;
+  model_number?: string;
+  slug?: string;
+  brand?: { name: string; slug: string };
+}
+
+interface CompatibleProduct {
+  id: number;
+  name: string;
+  slug: string;
+  sku: string;
+  price: string;
+  mrp?: string;
+  brand?: { name: string; slug: string };
+  primary_image?: { image?: string } | null;
+  discount_percentage?: number;
+  stock_status?: {
+    in_stock: boolean;
+  };
+}
+
 export async function generateMetadata({ params }: CompatibilityResultProps): Promise<Metadata> {
   const resolvedParams = await params;
   try {
-    const device = await fetchApi<any>(`/compatibility/devices/${resolvedParams.modelSlug}/`);
+    const device = await fetchApi<DeviceDetail>(`/compatibility/devices/${resolvedParams.modelSlug}/`);
     return {
       title: `Compatible Cartridges for ${device.brand?.name || ""} ${device.model_name || ""} | Rastogi Cartridge`,
       description: `Shop guaranteed compatible ink & toner cartridges for ${device.brand?.name || ""} ${device.model_name || ""} ${device.model_number || ""}.`,
@@ -32,18 +55,18 @@ export default async function CompatibilityResultPage({ params }: CompatibilityR
   const resolvedParams = await params;
   const { brandSlug, modelSlug } = resolvedParams;
 
-  let device: any = null;
-  let products: any[] = [];
+  let device: DeviceDetail | null = null;
+  let products: CompatibleProduct[] = [];
 
   try {
     // 1. Fetch Device Model Details
     try {
-      device = await fetchApi<any>(`/compatibility/devices/${modelSlug}/`);
+      device = await fetchApi<DeviceDetail>(`/compatibility/devices/${modelSlug}/`);
     } catch {
       // Fallback: search devices list for model matching slug
-      const listRes = await fetchApi<any>(`/compatibility/devices/?brand=${brandSlug}`);
-      const list = listRes.results || listRes || [];
-      device = list.find((m: any) => m.slug === modelSlug || m.id?.toString() === modelSlug);
+      const listRes = await fetchApi<{ results?: DeviceDetail[] } | DeviceDetail[]>(`/compatibility/devices/?brand=${brandSlug}`);
+      const list = Array.isArray(listRes) ? listRes : listRes.results || [];
+      device = list.find((m: DeviceDetail) => m.slug === modelSlug || m.id?.toString() === modelSlug) || null;
     }
 
     if (!device) {
@@ -51,8 +74,8 @@ export default async function CompatibilityResultPage({ params }: CompatibilityR
     }
 
     // 2. Fetch Compatible Products
-    const productsRes = await fetchApi<any>(`/compatibility/devices/${device.slug || modelSlug}/products/`);
-    products = productsRes.results || productsRes || [];
+    const productsRes = await fetchApi<{ results?: CompatibleProduct[] } | CompatibleProduct[]>(`/compatibility/devices/${device.slug || modelSlug}/products/`);
+    products = Array.isArray(productsRes) ? productsRes : productsRes.results || [];
   } catch {
     return notFound();
   }
@@ -123,7 +146,7 @@ export default async function CompatibilityResultPage({ params }: CompatibilityR
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.map((product: any) => (
+            {products.map((product: CompatibleProduct) => (
               <Link
                 key={product.id}
                 href={`/product/${product.slug}`}

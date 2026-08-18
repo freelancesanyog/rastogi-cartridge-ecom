@@ -14,8 +14,6 @@ import {
   Sparkles,
   MapPin,
   ChevronDown,
-  LayoutDashboard,
-  ShieldCheck,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
 import { useCartStore } from "@/store/cart-store";

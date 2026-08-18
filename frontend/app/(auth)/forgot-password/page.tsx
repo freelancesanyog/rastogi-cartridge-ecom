@@ -24,8 +24,9 @@ export default function ForgotPasswordPage() {
       });
 
       setMessage(res.message || "If an account exists, a password reset link has been sent.");
-    } catch (err: any) {
-      setError(err.message || "Failed to process password reset request.");
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || "Failed to process password reset request.";
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }

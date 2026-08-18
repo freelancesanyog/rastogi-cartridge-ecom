@@ -30,8 +30,9 @@ export default function ContactPage() {
 
       setSuccessMessage(res.message || "Thank you! Your message has been sent.");
       setFormData({ name: "", email: "", subject: "", message: "" });
-    } catch (err: any) {
-      setErrorMessage(err.message || "Failed to send message. Please try again.");
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || "Failed to send message. Please try again.";
+      setErrorMessage(errorMsg);
     } finally {
       setIsSubmitting(false);
     }

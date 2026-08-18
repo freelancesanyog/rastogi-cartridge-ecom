@@ -9,18 +9,39 @@ import { useEffect } from "react";
 
 import { showTopAlert } from "@/lib/swal";
 
+interface DrawerCartItem {
+  id: number;
+  product: {
+    name: string;
+    sku: string;
+  };
+  price_at_add: string | number;
+  quantity: number;
+  line_total: string | number;
+}
+
+interface CartDrawerData {
+  items?: DrawerCartItem[];
+  item_count?: number;
+  subtotal?: string | number;
+  discount_amount?: string | number;
+  total_amount?: string | number;
+}
+
 export default function CartDrawer() {
   const { isCartOpen, closeCart, setCartSummary } = useCartStore();
 
-  const { data: cart, refetch } = useQuery({
+  const { data: cart, refetch } = useQuery<CartDrawerData>({
     queryKey: ["cart"],
     queryFn: () => fetchApi("/cart/"),
-    enabled: isCartOpen,
   });
 
   useEffect(() => {
     if (cart) {
-      setCartSummary(cart.item_count || 0, cart.subtotal || "0.00");
+      setCartSummary(
+        cart.item_count || 0,
+        String(cart.total_amount || cart.subtotal || "0.00")
+      );
     }
   }, [cart, setCartSummary]);
 
@@ -31,8 +52,9 @@ export default function CartDrawer() {
         body: JSON.stringify({ quantity: newQty }),
       });
       refetch();
-    } catch (err: any) {
-      showTopAlert(err.message || "Failed to update quantity", "warning");
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || "Failed to update quantity";
+      showTopAlert(errorMsg, "warning");
     }
   };
 
@@ -40,8 +62,9 @@ export default function CartDrawer() {
     try {
       await fetchApi(`/cart/items/${itemId}/`, { method: "DELETE" });
       refetch();
-    } catch (err: any) {
-      showTopAlert(err.message || "Failed to remove item", "warning");
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || "Failed to remove item";
+      showTopAlert(errorMsg, "warning");
     }
   };
 
@@ -81,7 +104,7 @@ export default function CartDrawer() {
                 <p className="text-sm font-medium">Your cart is currently empty.</p>
               </div>
             ) : (
-              cart.items.map((item: any) => (
+              cart.items.map((item: DrawerCartItem) => (
                 <div
                   key={item.id}
                   className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 gap-3"
@@ -125,7 +148,7 @@ export default function CartDrawer() {
                   <span>Subtotal</span>
                   <span className="font-semibold text-slate-900 dark:text-white">₹{cart.subtotal}</span>
                 </div>
-                {cart.discount_amount && parseFloat(cart.discount_amount) > 0 && (
+                {cart.discount_amount && Number(cart.discount_amount) > 0 && (
                   <div className="flex justify-between text-sm text-emerald-600 font-medium">
                     <span>Coupon Discount</span>
                     <span>-₹{cart.discount_amount}</span>

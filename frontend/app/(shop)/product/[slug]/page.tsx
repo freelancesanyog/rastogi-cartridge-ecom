@@ -3,15 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   ChevronRight,
-  ShieldCheck,
-  Truck,
-  RefreshCw,
   Star,
-  CheckCircle,
-  AlertCircle,
   Sparkles,
-  MapPin,
-  Clock,
 } from "lucide-react";
 import ProductDetailView from "@/components/shop/ProductDetailView";
 import { fetchApi } from "@/lib/api-client";
@@ -23,10 +16,49 @@ interface ProductPageProps {
   params: Promise<{ slug: string }> | { slug: string };
 }
 
+interface ProductReview {
+  id: number;
+  user_email: string;
+  rating: number;
+  comment: string;
+}
+
+interface CompatibleDeviceItem {
+  id: number;
+  model_name: string;
+  model_number?: string;
+  slug: string;
+  brand?: { name: string; slug: string };
+}
+
+interface DetailedProduct {
+  id: number;
+  sku: string;
+  name: string;
+  slug: string;
+  brand?: { name: string; slug: string };
+  category?: { name: string; slug: string; requires_compatibility_mapping?: boolean };
+  description?: string;
+  price: string;
+  mrp?: string;
+  specifications?: Record<string, unknown>;
+  primary_image?: { image: string } | null;
+  images?: Array<{ image: string }>;
+  discount_percentage?: number;
+  stock_status: {
+    in_stock: boolean;
+    status: string;
+    available_quantity: number;
+    is_low_stock: boolean;
+  };
+  meta_title?: string;
+  meta_description?: string;
+}
+
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const p = await params;
   try {
-    const product = await fetchApi<any>(`/catalog/products/${p.slug}/`);
+    const product = await fetchApi<DetailedProduct>(`/catalog/products/${p.slug}/`);
     return {
       title: product.meta_title || `${product.name} | Rastogi Cartridge Store`,
       description: product.meta_description || product.description || `Buy ${product.name} online with Cash-on-Delivery at Rastogi Cartridge.`,
@@ -45,19 +77,19 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const p = await params;
-  let product: any = null;
-  let reviews: any[] = [];
-  let compatibleDevices: any[] = [];
+  let product: DetailedProduct | null = null;
+  let reviews: ProductReview[] = [];
+  let compatibleDevices: CompatibleDeviceItem[] = [];
 
   try {
-    product = await fetchApi<any>(`/catalog/products/${p.slug}/`);
+    product = await fetchApi<DetailedProduct>(`/catalog/products/${p.slug}/`);
   } catch {
     notFound();
   }
 
   try {
-    const reviewsRes = await fetchApi<any>(`/reviews/?product=${product.id}`);
-    reviews = reviewsRes.results || [];
+    const reviewsRes = await fetchApi<{ results?: ProductReview[] } | ProductReview[]>(`/reviews/?product=${product.id}`);
+    reviews = Array.isArray(reviewsRes) ? reviewsRes : reviewsRes.results || [];
   } catch {
     reviews = [];
   }
@@ -65,8 +97,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   // Fetch compatible devices if category requires compatibility mapping
   if (product.category?.requires_compatibility_mapping) {
     try {
-      const devicesRes = await fetchApi<any>(`/compatibility/devices/?product=${product.id}`);
-      compatibleDevices = devicesRes.results || [];
+      const devicesRes = await fetchApi<{ results?: CompatibleDeviceItem[] } | CompatibleDeviceItem[]>(`/compatibility/devices/?product=${product.id}`);
+      compatibleDevices = Array.isArray(devicesRes) ? devicesRes : devicesRes.results || [];
     } catch {
       compatibleDevices = [];
     }
@@ -125,7 +157,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <p className="text-xs text-slate-500">This cartridge from Rastogi Cartridge is verified to fit the following printer models:</p>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-2">
-                {compatibleDevices.map((dev: any) => (
+                {compatibleDevices.map((dev: CompatibleDeviceItem) => (
                   <Link
                     key={dev.id}
                     href={`/compatibility/${dev.brand?.slug}/${dev.slug}`}
@@ -150,7 +182,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <p className="text-xs text-slate-400 italic">No reviews yet for this product. Be the first to leave feedback after purchase!</p>
             ) : (
               <div className="space-y-4">
-                {reviews.map((rev: any) => (
+                {reviews.map((rev: ProductReview) => (
                   <div key={rev.id} className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-slate-900 dark:text-white">{rev.user_email}</span>

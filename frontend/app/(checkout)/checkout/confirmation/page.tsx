@@ -7,11 +7,38 @@ import Link from "next/link";
 import { CheckCircle, Truck, ArrowRight, Loader2 } from "lucide-react";
 import { fetchApi } from "@/lib/api-client";
 
+interface ConfirmationOrderItem {
+  id: number;
+  quantity: number;
+  product_name: string;
+  line_total: string | number;
+}
+
+interface OrderConfirmationDetail {
+  order_number: string;
+  created_at: string;
+  status: string;
+  subtotal?: string | number;
+  total_amount?: string | number;
+  discount_amount?: string | number | any;
+  coupon_code?: string;
+  shipping_address?: {
+    recipient_name: string;
+    street_address: string;
+    city: string;
+    state: string;
+    postal_code: string;
+    country: string;
+    phone_number: string;
+  };
+  items?: ConfirmationOrderItem[];
+}
+
 function OrderConfirmationContent() {
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get("order");
 
-  const { data: order, isLoading } = useQuery({
+  const { data: order, isLoading } = useQuery<OrderConfirmationDetail>({
     queryKey: ["order-confirmation", orderNumber],
     queryFn: () => fetchApi(`/orders/${orderNumber}/`),
     enabled: !!orderNumber,
@@ -80,8 +107,9 @@ function OrderConfirmationContent() {
             <h3 className="font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider mb-2">
               Items Ordered ({order.items?.length || 0})
             </h3>
+
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {order.items?.map((item: any) => (
+              {order.items?.map((item: ConfirmationOrderItem) => (
                 <div key={item.id} className="flex justify-between items-center text-slate-700 dark:text-slate-300">
                   <span className="truncate pr-2">{item.quantity}x {item.product_name}</span>
                   <span className="font-bold">₹ {item.line_total}</span>

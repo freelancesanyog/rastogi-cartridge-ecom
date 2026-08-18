@@ -15,10 +15,38 @@ interface CategoryPageProps {
   searchParams: Promise<{ [key: string]: string | undefined }> | { [key: string]: string | undefined };
 }
 
+interface CategoryDetail {
+  id: number;
+  name: string;
+  slug: string;
+  meta_title?: string;
+  meta_description?: string;
+}
+
+interface CategoryProductItem {
+  id: number;
+  name: string;
+  slug: string;
+  sku: string;
+  price: string;
+  mrp?: string;
+  brand?: { name: string; slug: string };
+  primary_image?: { image?: string } | null;
+  discount_percentage?: number;
+  stock_status?: {
+    in_stock: boolean;
+  };
+}
+
+interface CategoryProductsResponse {
+  results: CategoryProductItem[];
+  count: number;
+}
+
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const p = await params;
   try {
-    const category = await fetchApi<any>(`/catalog/categories/${p.slug}/`);
+    const category = await fetchApi<CategoryDetail>(`/catalog/categories/${p.slug}/`);
     return {
       title: category.meta_title || `${category.name} | Rastogi Cartridge`,
       description: category.meta_description || `Buy ${category.name} online with Cash-on-Delivery at Rastogi Cartridge.`,
@@ -37,12 +65,12 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
   const p = await params;
   const s = await searchParams;
-  let category: any = null;
-  let productsRes: any = { results: [], count: 0 };
-  let brands: any[] = [];
+  let category: CategoryDetail | null = null;
+  let productsRes: CategoryProductsResponse = { results: [], count: 0 };
+  let _brands: Array<{ id: number; name: string; slug: string }> = [];
 
   try {
-    category = await fetchApi<any>(`/catalog/categories/${p.slug}/`);
+    category = await fetchApi<CategoryDetail>(`/catalog/categories/${p.slug}/`);
   } catch {
     notFound();
   }
@@ -58,9 +86,15 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     if (s?.in_stock) queryParams.set("in_stock", s.in_stock);
     if (s?.page) queryParams.set("page", s.page);
 
-    productsRes = await fetchApi<any>(`/catalog/products/?${queryParams.toString()}`);
-    const brandsRes = await fetchApi<any>("/catalog/brands/");
-    brands = brandsRes.results || [];
+    const prodData = await fetchApi<CategoryProductsResponse | CategoryProductItem[]>(`/catalog/products/?${queryParams.toString()}`);
+    if (Array.isArray(prodData)) {
+      productsRes = { results: prodData, count: prodData.length };
+    } else if (prodData) {
+      productsRes = prodData;
+    }
+
+    const brandsRes = await fetchApi<{ results?: Array<{ id: number; name: string; slug: string }> }>("/catalog/brands/");
+    _brands = brandsRes.results || [];
   } catch {
     productsRes = { results: [], count: 0 };
   }
@@ -112,7 +146,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           {/* Filters Column */}
           <aside className="lg:col-span-1">
             <Suspense fallback={<div className="p-4 text-xs text-slate-400"><Loader2 className="w-4 h-4 animate-spin" /></div>}>
-              <CategoryFilterBar brands={brands} />
+              <CategoryFilterBar brands={_brands} />
             </Suspense>
           </aside>
 
@@ -128,7 +162,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {productsRes.results.map((product: any) => (
+                {productsRes.results.map((product: CategoryProductItem) => (
                   <Link
                     key={product.id}
                     href={`/product/${product.slug}`}

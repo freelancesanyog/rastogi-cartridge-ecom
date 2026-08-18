@@ -22,15 +22,64 @@ import { getImageUrl } from "@/lib/utils";
 import "react-toastify/dist/ReactToastify.css";
 import "react-confirm-alert/src/react-confirm-alert.css";
 
+interface OrderItem {
+  id: number;
+  product_id?: number;
+  product_name?: string;
+  product_slug?: string;
+  product_image?: string;
+  product_sku?: string;
+  line_total?: string | number;
+  quantity: number;
+  unit_price: string | number;
+  total_price: string | number;
+}
+
+interface StatusHistoryItem {
+  id: number;
+  from_status: string;
+  to_status: string;
+  created_at: string;
+}
+
+interface ReviewRecord {
+  id: number;
+  product: number;
+  rating: number;
+  comment: string;
+}
+
+interface FullOrderDetail {
+  id: number;
+  order_number: string;
+  status: string;
+  created_at: string;
+  subtotal?: string | number;
+  discount_amount?: string | number;
+  coupon_code?: string;
+  total_amount?: string | number;
+  status_history?: StatusHistoryItem[];
+  shipping_address?: {
+    recipient_name: string;
+    street_address: string;
+    city: string;
+    state: string;
+    postal_code: string;
+    country: string;
+    phone_number: string;
+  };
+  items?: OrderItem[];
+}
+
 export default function OrderDetailPage() {
   const params = useParams();
   const orderNumber = params.orderNumber as string;
 
   const [isCancelling, setIsCancelling] = useState(false);
-  const [selectedItemForReview, setSelectedItemForReview] = useState<any>(null);
+  const [selectedItemForReview, setSelectedItemForReview] = useState<OrderItem | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
-  const { data: order, isLoading, refetch } = useQuery({
+  const { data: order, isLoading, refetch } = useQuery<FullOrderDetail>({
     queryKey: ["order-detail", orderNumber],
     queryFn: () => fetchApi(`/orders/${orderNumber}/`),
     enabled: !!orderNumber,
@@ -41,14 +90,14 @@ export default function OrderDetailPage() {
     queryFn: () => fetchApi("/reviews/?my_reviews=true"),
   });
 
-  const myReviews = Array.isArray(myReviewsRes?.results)
-    ? myReviewsRes.results
+  const myReviews: ReviewRecord[] = Array.isArray((myReviewsRes as { results?: ReviewRecord[] })?.results)
+    ? (myReviewsRes as { results: ReviewRecord[] }).results
     : Array.isArray(myReviewsRes)
-      ? myReviewsRes
+      ? (myReviewsRes as ReviewRecord[])
       : [];
 
-  const reviewsByProductId: Record<number, any> = {};
-  myReviews.forEach((rev: any) => {
+  const reviewsByProductId: Record<number, ReviewRecord> = {};
+  myReviews.forEach((rev) => {
     if (rev.product) {
       reviewsByProductId[rev.product] = rev;
     }
@@ -73,8 +122,9 @@ export default function OrderDetailPage() {
               });
               toast.success("Order cancelled successfully!");
               refetch();
-            } catch (err: any) {
-              toast.error(err.message || "Failed to cancel order.");
+            } catch (err: unknown) {
+              const errorMsg = (err as Error)?.message || "Failed to cancel order.";
+              toast.error(errorMsg);
             } finally {
               setIsCancelling(false);
             }
@@ -88,7 +138,7 @@ export default function OrderDetailPage() {
     });
   };
 
-  const openReviewModal = (item: any) => {
+  const openReviewModal = (item: OrderItem) => {
     setSelectedItemForReview(item);
     setIsReviewModalOpen(true);
   };
@@ -165,7 +215,7 @@ export default function OrderDetailPage() {
 
         {order.status_history && order.status_history.length > 0 && (
           <div className="space-y-3 pt-2">
-            {order.status_history.map((hist: any) => (
+            {order.status_history.map((hist: StatusHistoryItem) => (
               <div
                 key={hist.id}
                 className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-400"
@@ -209,7 +259,7 @@ export default function OrderDetailPage() {
             Items Ordered ({order.items?.length || 0})
           </h3>
           <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
-            {order.items?.map((item: any) => {
+            {order.items?.map((item: OrderItem) => {
               const existingRev = item.product_id ? reviewsByProductId[item.product_id] : null;
               const productUrl = item.product_slug ? `/product/${item.product_slug}` : `/catalog`;
 
@@ -229,7 +279,7 @@ export default function OrderDetailPage() {
                         {item.product_image ? (
                           <Image
                             src={getImageUrl(item.product_image)}
-                            alt={item.product_name}
+                            alt={item.product_name || "Product Image"}
                             fill
                             sizes="56px"
                             className="object-contain p-1 group-hover:scale-105 transition-transform"
@@ -291,7 +341,7 @@ export default function OrderDetailPage() {
               </span>
             </div>
 
-            {order.discount_amount && parseFloat(order.discount_amount) > 0 && (
+            {order.discount_amount && Number(order.discount_amount) > 0 && (
               <div className="flex justify-between items-center text-emerald-600 font-medium">
                 <span className="flex items-center gap-1">
                   <span>Coupon Discount</span>
@@ -315,7 +365,7 @@ export default function OrderDetailPage() {
       </div>
 
       {/* Interactive Review Modal */}
-      {selectedItemForReview && (
+      {selectedItemForReview && selectedItemForReview.product_id && (
         <ReviewModal
           isOpen={isReviewModalOpen}
           onClose={() => {
@@ -323,7 +373,7 @@ export default function OrderDetailPage() {
             setSelectedItemForReview(null);
           }}
           productId={selectedItemForReview.product_id}
-          productName={selectedItemForReview.product_name}
+          productName={selectedItemForReview.product_name || ""}
           existingReview={reviewsByProductId[selectedItemForReview.product_id]}
           onSuccess={() => {
             refetchReviews();

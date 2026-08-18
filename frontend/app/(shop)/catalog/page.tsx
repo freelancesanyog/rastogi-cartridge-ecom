@@ -28,12 +28,38 @@ export async function generateMetadata({ searchParams }: CatalogPageProps): Prom
   };
 }
 
+interface CatalogCategory {
+  id: number;
+  name: string;
+  slug: string;
+  meta_description?: string;
+}
+
+interface CatalogProduct {
+  id: number;
+  name: string;
+  slug: string;
+  sku: string;
+  price: string;
+  mrp?: string;
+  brand?: { name: string; slug: string };
+  primary_image?: { image?: string } | null;
+  discount_percentage?: number;
+  stock_status?: {
+    in_stock: boolean;
+  };
+}
+
+interface ProductsResponse {
+  results: CatalogProduct[];
+  count: number;
+}
+
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const params = await searchParams;
-  let productsRes: any = { results: [], count: 0 };
-  let brands: any[] = [];
-  let categories: any[] = [];
-  let currentCategory: any = null;
+  let productsRes: ProductsResponse = { results: [], count: 0 };
+  let categories: CatalogCategory[] = [];
+  let currentCategory: CatalogCategory | null = null;
 
   try {
     const queryParams = new URLSearchParams();
@@ -46,22 +72,25 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     if (params?.q) queryParams.set("search", params.q);
     if (params?.page) queryParams.set("page", params.page);
 
-    const [prodData, brandData, catData] = await Promise.all([
-      fetchApi<any>(`/catalog/products/?${queryParams.toString()}`),
-      fetchApi<any>("/catalog/brands/"),
-      fetchApi<any>("/catalog/categories/"),
+    const [prodData, catData] = await Promise.all([
+      fetchApi<ProductsResponse | CatalogProduct[]>(`/catalog/products/?${queryParams.toString()}`),
+      fetchApi<{ results?: CatalogCategory[] } | CatalogCategory[]>("/catalog/categories/"),
     ]);
 
-    productsRes = prodData || { results: [], count: 0 };
-    brands = brandData?.results || brandData || [];
-    categories = catData?.results || catData || [];
+    if (Array.isArray(prodData)) {
+      productsRes = { results: prodData, count: prodData.length };
+    } else if (prodData) {
+      productsRes = prodData;
+    }
+
+    categories = Array.isArray(catData) ? catData : catData?.results || [];
 
     if (params?.category) {
-      currentCategory = categories.find((c: any) => c.slug === params.category);
+      currentCategory = categories.find((c) => c.slug === params.category) || null;
     }
   } catch {
     productsRes = { results: [], count: 0 };
-  }
+  };
 
   const titleText = currentCategory
     ? currentCategory.name
@@ -128,7 +157,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
                 >
                   All Categories
                 </Link>
-                {categories.map((cat: any) => (
+                {categories.map((cat: CatalogCategory) => (
                   <Link
                     key={cat.id}
                     href={`/catalog?category=${cat.slug}`}
@@ -171,7 +200,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {productsRes.results.map((product: any) => (
+                {productsRes.results.map((product: CatalogProduct) => (
                   <Link
                     key={product.id}
                     href={`/product/${product.slug}`}
@@ -190,7 +219,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
                         <Printer className="w-12 h-12 text-slate-300 dark:text-slate-700" />
                       )}
 
-                      {product.discount_percentage > 0 && (
+                      {!!product.discount_percentage && product.discount_percentage > 0 && (
                         <span className="absolute top-2 left-2 px-2 py-0.5 rounded bg-rose-600 text-white text-[10px] font-black">
                           {product.discount_percentage}% OFF
                         </span>

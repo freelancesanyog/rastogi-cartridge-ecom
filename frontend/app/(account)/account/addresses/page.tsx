@@ -41,7 +41,11 @@ export default function SavedAddressesPage() {
     queryFn: () => fetchApi("/users/addresses/"),
   });
 
-  const addresses = addressesRes?.results || addressesRes || [];
+  const addresses: Address[] = Array.isArray((addressesRes as { results?: Address[] })?.results)
+    ? (addressesRes as { results: Address[] }).results
+    : Array.isArray(addressesRes)
+    ? (addressesRes as Address[])
+    : [];
 
   const handleAddAddress = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -3,6 +3,19 @@ import { fetchApi } from "@/lib/api-client";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
+interface SitemapCategory {
+  slug: string;
+}
+
+interface SitemapProduct {
+  slug: string;
+}
+
+interface SitemapDevice {
+  slug: string;
+  brand?: { slug: string };
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     {
@@ -21,9 +34,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let categoryRoutes: MetadataRoute.Sitemap = [];
   try {
-    const categoriesRes = await fetchApi<any>("/catalog/categories/");
-    const categories = categoriesRes.results || categoriesRes || [];
-    categoryRoutes = categories.map((cat: any) => ({
+    const categoriesRes = await fetchApi<{ results?: SitemapCategory[] } | SitemapCategory[]>("/catalog/categories/");
+    const categories = Array.isArray(categoriesRes) ? categoriesRes : categoriesRes.results || [];
+    categoryRoutes = categories.map((cat: SitemapCategory) => ({
       url: `${SITE_URL}/category/${cat.slug}`,
       lastModified: new Date(),
       changeFrequency: "weekly",
@@ -35,9 +48,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let productRoutes: MetadataRoute.Sitemap = [];
   try {
-    const productsRes = await fetchApi<any>("/catalog/products/");
-    const products = productsRes.results || productsRes || [];
-    productRoutes = products.map((prod: any) => ({
+    const productsRes = await fetchApi<{ results?: SitemapProduct[] } | SitemapProduct[]>("/catalog/products/");
+    const products = Array.isArray(productsRes) ? productsRes : productsRes.results || [];
+    productRoutes = products.map((prod: SitemapProduct) => ({
       url: `${SITE_URL}/product/${prod.slug}`,
       lastModified: new Date(),
       changeFrequency: "daily",
@@ -49,9 +62,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let compatibilityRoutes: MetadataRoute.Sitemap = [];
   try {
-    const devicesRes = await fetchApi<any>("/compatibility/devices/");
-    const devices = devicesRes.results || devicesRes || [];
-    compatibilityRoutes = devices.map((dev: any) => ({
+    const devicesRes = await fetchApi<{ results?: SitemapDevice[] } | SitemapDevice[]>("/compatibility/devices/");
+    const devices = Array.isArray(devicesRes) ? devicesRes : devicesRes.results || [];
+    compatibilityRoutes = devices.map((dev: SitemapDevice) => ({
       url: `${SITE_URL}/compatibility/${dev.brand?.slug || "printer"}/${dev.slug}`,
       lastModified: new Date(),
       changeFrequency: "weekly",

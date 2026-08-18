@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { Printer, ShieldCheck, Award, Users, Sparkles } from "lucide-react";
+import { ShieldCheck, Award, Users, Sparkles } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About Us | Rastogi Cartridge",

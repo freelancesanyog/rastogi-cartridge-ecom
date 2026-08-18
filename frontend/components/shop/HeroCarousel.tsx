@@ -17,7 +17,7 @@ import {
 
 interface SlideData {
   id: number;
-  badgeIcon: any;
+  badgeIcon: React.ElementType;
   badgeText: string;
   badgeBg: string;
   badgeBorder: string;
@@ -34,7 +34,7 @@ interface SlideData {
   primaryCtaHref: string;
   secondaryCtaText: string;
   secondaryCtaHref: string;
-  secondaryCtaIcon: any;
+  secondaryCtaIcon: React.ElementType;
 }
 
 const slides: SlideData[] = [

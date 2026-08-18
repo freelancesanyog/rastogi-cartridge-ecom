@@ -3,11 +3,29 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import Image from "next/image";
-import { Package, ChevronRight, Printer } from "lucide-react";
+import { Package, ChevronRight, Printer, Loader2 } from "lucide-react";
 import { fetchApi } from "@/lib/api-client";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { OrderListSkeleton } from "@/components/ui/Skeleton";
 import { getImageUrl } from "@/lib/utils";
+
+interface OrderSummaryItem {
+  id: number;
+  product_name: string;
+  product_slug?: string;
+  product_image?: string;
+  quantity: number;
+  product_sku: string;
+  line_total: string | number;
+}
+
+interface OrderSummary {
+  id: number;
+  order_number: string;
+  created_at: string;
+  status: string;
+  total_amount: string | number;
+  items?: OrderSummaryItem[];
+}
 
 export default function OrderHistoryPage() {
   const { data: ordersRes, isLoading } = useQuery({
@@ -15,11 +33,19 @@ export default function OrderHistoryPage() {
     queryFn: () => fetchApi("/orders/"),
   });
 
-  if (isLoading) {
-    return <OrderListSkeleton count={4} />;
-  }
+  const orders: OrderSummary[] = Array.isArray((ordersRes as { results?: OrderSummary[] })?.results)
+    ? (ordersRes as { results: OrderSummary[] }).results
+    : Array.isArray(ordersRes)
+      ? (ordersRes as OrderSummary[])
+      : [];
 
-  const orders = ordersRes?.results || ordersRes || [];
+  if (isLoading) {
+    return (
+      <div className="py-12 text-center text-slate-400">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto" />
+      </div>
+    );
+  }
 
   if (orders.length === 0) {
     return (
@@ -43,7 +69,7 @@ export default function OrderHistoryPage() {
       </div>
 
       <div className="space-y-4">
-        {orders.map((order: any) => (
+        {orders.map((order: OrderSummary) => (
           <div
             key={order.id}
             className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 shadow-sm hover:shadow-md transition-all"
@@ -77,7 +103,7 @@ export default function OrderHistoryPage() {
 
             {/* Product Thumbnails List */}
             <div className="space-y-3">
-              {order.items?.map((item: any) => {
+              {order.items?.map((item: OrderSummaryItem) => {
                 const productUrl = item.product_slug ? `/product/${item.product_slug}` : `/catalog`;
 
                 return (

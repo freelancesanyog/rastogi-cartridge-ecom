@@ -52,8 +52,9 @@ export default function RegisterPage() {
 
       setSuccess(true);
       setTimeout(() => router.push("/login"), 2000);
-    } catch (err: any) {
-      setError(err.message || "Registration failed. Please check your inputs.");
+    } catch (err: unknown) {
+      const errorMsg = (err as Error)?.message || "Registration failed. Please check your inputs.";
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }
