@@ -4,7 +4,7 @@ import { fetchApi } from "@/lib/api-client";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  let staticRoutes: MetadataRoute.Sitemap = [
+  const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: `${SITE_URL}`,
       lastModified: new Date(),

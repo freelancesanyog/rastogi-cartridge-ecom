@@ -1,9 +1,7 @@
-import { Suspense } from "react";
 import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { Printer, ChevronRight, Loader2, Star, Truck } from "lucide-react";
-import CategoryFilterBar from "@/components/shop/CategoryFilterBar";
+import { Printer, ChevronRight, Star, Truck } from "lucide-react";
 import { fetchApi } from "@/lib/api-client";
 import { generateBreadcrumbJsonLd } from "@/lib/seo";
 import { getImageUrl } from "@/lib/utils";

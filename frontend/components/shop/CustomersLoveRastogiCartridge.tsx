@@ -171,7 +171,7 @@ export default function CustomersLoveRastogiCartridge() {
                   {item.title}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">
-                  "{item.comment}"
+                  &ldquo;{item.comment}&rdquo;
                 </p>
               </div>
 

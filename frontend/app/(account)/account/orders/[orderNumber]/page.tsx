@@ -1,14 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Image from "next/image";
 import {
-  Package,
-  Truck,
   Clock,
   CheckCircle,
-  AlertCircle,
   Ban,
   ArrowLeft,
   Loader2,
@@ -27,7 +24,6 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 
 export default function OrderDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const orderNumber = params.orderNumber as string;
 
   const [isCancelling, setIsCancelling] = useState(false);
