@@ -10,6 +10,18 @@ import { confirmAlert } from "react-confirm-alert";
 import "react-toastify/dist/ReactToastify.css";
 import "react-confirm-alert/src/react-confirm-alert.css";
 
+interface Address {
+  id: number;
+  recipient_name: string;
+  street_address: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+  phone_number: string;
+  is_default: boolean;
+}
+
 export default function SavedAddressesPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,8 +65,9 @@ export default function SavedAddressesPage() {
         is_default: false,
       });
       refetch();
-    } catch (err: any) {
-      alert(err.message || "Failed to add address.");
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error(error.message || "Failed to add address.");
     } finally {
       setIsSubmitting(false);
     }
@@ -75,8 +88,9 @@ export default function SavedAddressesPage() {
 
               toast.success("Address deleted successfully!");
               refetch();
-            } catch (err: any) {
-              toast.error(err.message || "Failed to delete address.");
+            } catch (err: unknown) {
+              const error = err as Error;
+              toast.error(error.message || "Failed to delete address.");
             }
           },
         },
@@ -211,7 +225,7 @@ export default function SavedAddressesPage() {
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {addresses.map((addr: any) => (
+          {addresses.map((addr: Address) => (
             <div
               key={addr.id}
               className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 relative shadow-sm"
