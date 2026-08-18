@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import {
   Star,
   CheckCircle,
@@ -14,13 +13,13 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import ProductImageGallery from "@/components/shop/ProductImageGallery";
+import ProductImageGallery, { ProductImage } from "@/components/shop/ProductImageGallery";
 import AddToCartButton from "@/components/shop/AddToCartButton";
 
 interface ProductVariant {
   id: number;
   sku: string;
-  attributes: Record<string, any>;
+  attributes: Record<string, unknown>;
   price_override: string | null;
   effective_price: string;
   stock: number;
@@ -43,9 +42,9 @@ interface ProductDetailViewProps {
     description?: string;
     price: string;
     mrp?: string;
-    specifications?: Record<string, any>;
-    images?: any[];
-    primary_image?: any;
+    specifications?: Record<string, unknown>;
+    images?: ProductImage[];
+    primary_image?: ProductImage | null;
     variants?: ProductVariant[];
     discount_percentage?: number;
     stock_status: {
@@ -57,7 +56,7 @@ interface ProductDetailViewProps {
   };
 }
 
-const renderSpecValue = (val: any): string => {
+const renderSpecValue = (val: unknown): string => {
   if (val === null || val === undefined) return "";
   if (typeof val === "boolean") return val ? "Yes" : "No";
   if (typeof val !== "object") return String(val);
@@ -67,13 +66,14 @@ const renderSpecValue = (val: any): string => {
       .map((item) => {
         if (typeof item === "object" && item !== null) {
           const parts: string[] = [];
-          if (item.type) parts.push(String(item.type));
-          if (item.name && item.name !== item.type) parts.push(String(item.name));
-          if (item.capacity) parts.push(`(${item.capacity})`);
-          if (item.quantity && item.quantity > 1) parts.push(`x${item.quantity}`);
+          const record = item as Record<string, unknown>;
+          if (record.type) parts.push(String(record.type));
+          if (record.name && record.name !== record.type) parts.push(String(record.name));
+          if (record.capacity) parts.push(`(${String(record.capacity)})`);
+          if (typeof record.quantity === "number" && record.quantity > 1) parts.push(`x${record.quantity}`);
 
           if (parts.length > 0) return parts.join(" ");
-          return Object.values(item).map(String).join(" ");
+          return Object.values(record).map(String).join(" ");
         }
         return String(item);
       })
@@ -81,7 +81,7 @@ const renderSpecValue = (val: any): string => {
       .join(", ");
   }
 
-  const entries = Object.entries(val);
+  const entries = Object.entries(val as Record<string, unknown>);
   return entries
     .map(([k, v]) => {
       const vStr = typeof v === "object" ? renderSpecValue(v) : String(v);

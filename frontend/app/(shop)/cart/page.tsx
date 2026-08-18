@@ -23,10 +23,10 @@ interface FullCartItem {
 }
 
 interface FullCartData {
-  items?: FullCartItem[] | any;
+  items?: FullCartItem[];
   item_count?: number;
   coupon_code?: string;
-  discount_amount?: string | number | any;
+  discount_amount?: string | number;
   subtotal?: string | number;
   total_amount?: string | number;
 }
@@ -128,7 +128,7 @@ export default function CartPage() {
 
           {/* Cart Items List */}
           <div className="lg:col-span-2 space-y-4">
-            {cart.items.map((item: FullCartItem) => (
+            {cart?.items?.map((item: FullCartItem) => (
               <div
                 key={item.id}
                 className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm"
@@ -228,7 +228,7 @@ export default function CartPage() {
                   <span className="font-semibold text-slate-900 dark:text-white">${cart.subtotal}</span>
                 </div>
 
-                {cart.discount_amount && parseFloat(cart.discount_amount) > 0 && (
+                {cart.discount_amount && Number(cart.discount_amount) > 0 && (
                   <div className="flex justify-between text-emerald-600 font-medium">
                     <span>Coupon Discount</span>
                     <span>-${cart.discount_amount}</span>

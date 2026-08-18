@@ -16,7 +16,7 @@ interface CartResponse {
   }>;
   item_count?: number;
   coupon_code?: string;
-  discount_amount?: string | number | any;
+  discount_amount?: string | number;
   subtotal?: string | number;
   total_amount?: string | number;
 }
@@ -331,7 +331,7 @@ export default function CheckoutPage() {
                 <span className="font-semibold text-slate-900 dark:text-white">₹{cart?.subtotal || "0.00"}</span>
               </div>
 
-              {cart?.discount_amount && parseFloat(cart.discount_amount) > 0 && (
+              {cart?.discount_amount && Number(cart.discount_amount) > 0 && (
                 <div className="flex justify-between text-emerald-600 font-medium">
                   <span>Coupon Discount</span>
                   <span>-₹{cart.discount_amount}</span>

@@ -20,7 +20,7 @@ interface OrderConfirmationDetail {
   status: string;
   subtotal?: string | number;
   total_amount?: string | number;
-  discount_amount?: string | number | any;
+  discount_amount?: string | number;
   coupon_code?: string;
   shipping_address?: {
     recipient_name: string;
@@ -122,7 +122,7 @@ function OrderConfirmationContent() {
                 <span className="font-semibold text-slate-900 dark:text-white">₹ {order.subtotal || order.total_amount}</span>
               </div>
 
-              {order.discount_amount && parseFloat(order.discount_amount) > 0 && (
+              {order.discount_amount && Number(order.discount_amount) > 0 && (
                 <div className="flex justify-between items-center text-emerald-600 font-medium">
                   <span className="flex items-center gap-1">
                     <span>Coupon Discount</span>
