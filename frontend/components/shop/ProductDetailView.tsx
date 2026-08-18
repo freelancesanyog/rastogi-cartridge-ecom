@@ -100,12 +100,11 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const { liveStock } = useLiveStock(product.slug);
 
   // Dynamic live viewer count (fluctuates dynamically between 18 and 45)
-  const [viewerCount, setViewerCount] = useState<number>(27);
+  const [viewerCount, setViewerCount] = useState<number>(
+    () => Math.floor(Math.random() * (36 - 22 + 1)) + 22
+  );
 
   useEffect(() => {
-    const initial = Math.floor(Math.random() * (36 - 22 + 1)) + 22;
-    setViewerCount(initial);
-
     let timer: NodeJS.Timeout;
 
     const scheduleNextUpdate = () => {
