@@ -100,17 +100,18 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
   const { liveStock } = useLiveStock(product.slug);
 
   // Dynamic live viewer count (fluctuates dynamically between 18 and 45)
-  const [viewerCount, setViewerCount] = useState<number>(
-    () => Math.floor(Math.random() * (36 - 22 + 1)) + 22
-  );
+  const [viewerCount, setViewerCount] = useState<number>(27);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
 
-    const scheduleNextUpdate = () => {
-      const delay = Math.floor(Math.random() * 3000) + 3500;
+    const scheduleNextUpdate = (isFirst = false) => {
+      const delay = isFirst ? 100 : Math.floor(Math.random() * 3000) + 3500;
       timer = setTimeout(() => {
         setViewerCount((prev) => {
+          if (isFirst) {
+            return Math.floor(Math.random() * (36 - 22 + 1)) + 22;
+          }
           const deltas = [-3, -2, -1, 1, 2, 3];
           const delta = deltas[Math.floor(Math.random() * deltas.length)];
           let next = prev + delta;
@@ -118,11 +119,11 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
           if (next > 45) next = 45 - Math.floor(Math.random() * 3);
           return next;
         });
-        scheduleNextUpdate();
+        scheduleNextUpdate(false);
       }, delay);
     };
 
-    scheduleNextUpdate();
+    scheduleNextUpdate(true);
 
     return () => clearTimeout(timer);
   }, []);
@@ -250,7 +251,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
               <span className="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 font-medium bg-white dark:bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700/80 shadow-2xs">
                 <span className="select-none animate-pulse animate-ping">⚡</span>
                 <span>
-                  <strong className="font-bold text-slate-900 dark:text-white transition-all duration-300">{viewerCount}</strong> people are viewing this right now!
+                  <strong suppressHydrationWarning className="font-bold text-slate-900 dark:text-white transition-all duration-300">{viewerCount}</strong> people are viewing this right now!
                 </span>
               </span>
             </div>
@@ -459,7 +460,7 @@ export default function ProductDetailView({ product }: ProductDetailViewProps) {
             <span className="font-semibold text-slate-800 dark:text-slate-200">COD / Online</span>
           </div>
         </div>
-                    
+
       </div>
 
     </div>

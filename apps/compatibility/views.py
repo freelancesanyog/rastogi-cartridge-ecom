@@ -12,6 +12,7 @@ from apps.compatibility.filters import DeviceBrandFilter, DeviceModelFilter
 from apps.compatibility.models import DeviceBrand, DeviceModel
 from apps.compatibility.serializers import DeviceBrandSerializer, DeviceModelSerializer
 from apps.compatibility.services import COMPATIBILITY_CACHE_PREFIX, CompatibilityService
+from apps.core.cache import safe_cache_get, safe_cache_set
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ class DeviceModelViewSet(viewsets.ReadOnlyModelViewSet):
         returns active compatible products (paginated & Redis cached).
         """
         cache_key = f"{COMPATIBILITY_CACHE_PREFIX}products_{slug}_{request.get_full_path()}"
-        cached_response = cache.get(cache_key)
+        cached_response = safe_cache_get(cache_key)
 
         if cached_response is not None:
             return Response(cached_response)
@@ -63,11 +64,11 @@ class DeviceModelViewSet(viewsets.ReadOnlyModelViewSet):
         if page is not None:
             serializer = ProductListSerializer(page, many=True)
             paginated_res = self.get_paginated_response(serializer.data)
-            cache.set(cache_key, paginated_res.data, timeout=1800)  # 30 mins cache
+            safe_cache_set(cache_key, paginated_res.data, timeout=1800)  # 30 mins cache
             return paginated_res
 
         serializer = ProductListSerializer(products_qs, many=True)
-        cache.set(cache_key, serializer.data, timeout=1800)
+        safe_cache_set(cache_key, serializer.data, timeout=1800)
         return Response(serializer.data)
 
     @action(detail=False, methods=["get"], url_path="compatibility-categories")

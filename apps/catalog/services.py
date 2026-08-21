@@ -1,9 +1,9 @@
 import logging
 
-from django.core.cache import cache
 from django.db.models import Prefetch
 
 from apps.catalog.models import Category, Product, ProductVariant
+from apps.core.cache import delete_cache_keys, delete_cache_pattern, safe_cache_get, safe_cache_set
 
 logger = logging.getLogger(__name__)
 
@@ -47,17 +47,17 @@ class CatalogService:
         Returns top-level categories with prefetched children for tree views.
         Uses Redis cache for fast responses under load.
         """
-        cached_tree = cache.get(CATEGORY_TREE_CACHE_KEY)
+        cached_tree = safe_cache_get(CATEGORY_TREE_CACHE_KEY)
         if cached_tree is not None:
             return cached_tree
 
-        categories = (
+        categories = list(
             Category.objects.filter(parent__isnull=True)
             .prefetch_related("children")
             .order_by("name")
         )
 
-        cache.set(CATEGORY_TREE_CACHE_KEY, categories, timeout=3600)  # 1 hour cache
+        safe_cache_set(CATEGORY_TREE_CACHE_KEY, categories, timeout=3600)  # 1 hour cache
         return categories
 
     @staticmethod
@@ -81,17 +81,41 @@ class CatalogService:
         return 0.0
 
     @staticmethod
-    def clear_catalog_cache():
+    def invalidate_product_cache(slug: str = None):
         """
-        Clears all catalog-related cached data from Redis.
+        Invalidates specific product detail cache key (if slug provided)
+        and all paginated/filtered list caches under catalog_cache_list_*.
         """
         try:
-            cache.delete(CATEGORY_TREE_CACHE_KEY)
-            # Clear all cached list responses
-            if hasattr(cache, "delete_pattern"):
-                cache.delete_pattern(f"{CATALOG_CACHE_PREFIX}*")
-            else:
-                cache.clear()
+            if slug:
+                delete_cache_keys(f"{CATALOG_CACHE_PREFIX}detail_{slug}")
+            delete_cache_pattern(f"{CATALOG_CACHE_PREFIX}list_*")
+            logger.info("Product cache invalidated for slug: %s", slug or "all")
+        except Exception as exc:
+            logger.error("Failed to invalidate product cache: %s", exc)
+
+    @staticmethod
+    def invalidate_category_cache():
+        """
+        Invalidates category tree cache and catalog list caches.
+        """
+        try:
+            delete_cache_keys(CATEGORY_TREE_CACHE_KEY)
+            delete_cache_pattern(f"{CATALOG_CACHE_PREFIX}list_*")
+            logger.info("Category cache successfully invalidated.")
+        except Exception as exc:
+            logger.error("Failed to invalidate category cache: %s", exc)
+
+    @staticmethod
+    def clear_catalog_cache():
+        """
+        Clears all catalog-related cached entries selectively from Redis
+        without touching unrelated keys (sessions, Celery, health checks).
+        """
+        try:
+            delete_cache_keys(CATEGORY_TREE_CACHE_KEY)
+            delete_cache_pattern(f"{CATALOG_CACHE_PREFIX}*")
             logger.info("Catalog cache successfully invalidated.")
         except Exception as exc:
             logger.error("Failed to clear catalog cache: %s", exc)
+

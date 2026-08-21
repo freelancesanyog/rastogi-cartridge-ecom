@@ -4,6 +4,7 @@ from django.db.models import Prefetch
 
 from apps.catalog.models import Category, Product
 from apps.compatibility.models import DeviceModel
+from apps.core.cache import delete_cache_pattern
 
 logger = logging.getLogger(__name__)
 
@@ -77,3 +78,20 @@ class CompatibilityService:
             .select_related("brand", "category")
             .distinct()
         )
+
+    @staticmethod
+    def invalidate_compatibility_cache(device_model_slug: str = None):
+        """
+        Invalidates cached compatibility responses.
+        If device_model_slug is provided, invalidates ONLY that model's compatibility responses.
+        """
+        try:
+            if device_model_slug:
+                pattern = f"{COMPATIBILITY_CACHE_PREFIX}products_{device_model_slug}_*"
+            else:
+                pattern = f"{COMPATIBILITY_CACHE_PREFIX}*"
+            delete_cache_pattern(pattern)
+            logger.info("Compatibility cache invalidated for pattern: %s", pattern)
+        except Exception as exc:
+            logger.error("Failed to invalidate compatibility cache: %s", exc)
+

@@ -5,3 +5,7 @@ class CompatibilityConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "apps.compatibility"
     label = "compatibility"
+
+    def ready(self):
+        import apps.compatibility.signals  # noqa: F401
+

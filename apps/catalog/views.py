@@ -19,6 +19,7 @@ from apps.catalog.serializers import (
 )
 from apps.catalog.services import CATALOG_CACHE_PREFIX, CatalogService
 from apps.catalog.throttles import StockPollingThrottle
+from apps.core.cache import safe_cache_get, safe_cache_set
 from apps.inventory.services import InventoryService
 
 logger = logging.getLogger(__name__)
@@ -49,27 +50,27 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     def list(self, request, *args, **kwargs):
         # Build cache key based on query parameters
         cache_key = f"{CATALOG_CACHE_PREFIX}list_{request.get_full_path()}"
-        cached_response = cache.get(cache_key)
+        cached_response = safe_cache_get(cache_key)
 
         if cached_response is not None:
             return Response(cached_response)
 
         response = super().list(request, *args, **kwargs)
         if response.status_code == 200:
-            cache.set(cache_key, response.data, timeout=1800)  # 30 mins cache
+            safe_cache_set(cache_key, response.data, timeout=1800)  # 30 mins cache
         return response
 
     def retrieve(self, request, *args, **kwargs):
         slug = kwargs.get("slug")
         cache_key = f"{CATALOG_CACHE_PREFIX}detail_{slug}"
-        cached_response = cache.get(cache_key)
+        cached_response = safe_cache_get(cache_key)
 
         if cached_response is not None:
             return Response(cached_response)
 
         response = super().retrieve(request, *args, **kwargs)
         if response.status_code == 200:
-            cache.set(cache_key, response.data, timeout=3600)  # 1 hour cache
+            safe_cache_set(cache_key, response.data, timeout=3600)  # 1 hour cache
         return response
 
     @method_decorator(never_cache)
