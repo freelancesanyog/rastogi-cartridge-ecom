@@ -1,8 +1,8 @@
 from decimal import Decimal
-import pytest
-from django.core.cache import cache
 
-from apps.catalog.models import Brand, Category, Product, ProductVariant
+import pytest
+
+from apps.catalog.models import Category, Product
 from apps.core.cache import delete_cache_pattern, safe_cache_get, safe_cache_set
 
 

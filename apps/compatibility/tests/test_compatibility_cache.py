@@ -1,4 +1,5 @@
 from decimal import Decimal
+
 import pytest
 
 from apps.catalog.models import Category, Product
@@ -31,7 +32,7 @@ class TestCompatibilityCacheInvalidation:
         safe_cache_set("unrelated_cache_key", "valid")
 
         # Create mapping for model_1
-        mapping = CompatibilityMapping.objects.create(device_model=model_1, product=product)
+        CompatibilityMapping.objects.create(device_model=model_1, product=product)
 
         # Model 1 compatibility cache should be invalidated
         assert safe_cache_get(f"compatibility_cache_products_{model_1.slug}_/api/v1/models/laserjet-100/products/") is None
