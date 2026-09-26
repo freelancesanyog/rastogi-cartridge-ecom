@@ -36,6 +36,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /opt/venv /opt/venv
 COPY . /app
 
+# Collect static files for WhiteNoise
+RUN SECRET_KEY=dummy-build-key-for-collectstatic python manage.py collectstatic --noinput
+
 # Create non-root user
 RUN addgroup --system appgroup && adduser --system --group appuser \
     && chown -R appuser:appgroup /app /opt/venv
