@@ -50,7 +50,7 @@ export default function AdminDashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"products" | "categories" | "orders">("products");
 
-  const DJANGO_ADMIN_URL = "http://127.0.0.1:8001/admin/";
+  const DJANGO_ADMIN_URL = "http://127.0.0.1:8000/admin/";
 
   const loadData = async () => {
     setIsLoading(true);
@@ -161,7 +161,7 @@ export default function AdminDashboardPage() {
               className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition-colors"
             >
               <ExternalLink className="w-3.5 h-3.5" />
-              <span>Django Admin (Port 8001)</span>
+              <span>Django Admin (Port 8000)</span>
             </a>
           </div>
         </div>
@@ -222,7 +222,7 @@ export default function AdminDashboardPage() {
             <div>
               <h3 className="text-sm font-bold text-amber-300">Add or Manage Products in Django Admin</h3>
               <p className="text-xs text-slate-300">
-                Products added via Django Admin at <code className="bg-slate-900 px-1.5 py-0.5 rounded text-amber-300">http://127.0.0.1:8001/admin/catalog/product/</code> will instantly appear on the Rastogi Cartridge storefront.
+                Products added via Django Admin at <code className="bg-slate-900 px-1.5 py-0.5 rounded text-amber-300">http://127.0.0.1:8000/admin/catalog/product/</code> will instantly appear on the Rastogi Cartridge storefront.
               </p>
             </div>
           </div>

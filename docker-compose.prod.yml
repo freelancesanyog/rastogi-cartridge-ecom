@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres_data_prod:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ecom_user} -d ${POSTGRES_DB:-ecom_db}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ecom_user} -d ${POSTGRES_DB:-ecom_db}" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -20,7 +20,7 @@ services:
     container_name: printcart_redis_prod
     restart: always
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 5s
       retries: 5

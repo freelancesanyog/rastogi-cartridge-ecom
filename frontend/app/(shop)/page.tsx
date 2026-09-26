@@ -17,7 +17,7 @@ import CustomersLoveRastogiCartridge from "@/components/shop/CustomersLoveRastog
 import { fetchApi } from "@/lib/api-client";
 import { getImageUrl } from "@/lib/utils";
 
-export const revalidate = 60; // ISR 60 seconds
+export const revalidate = 0; // Dynamic fetch for instant admin updates
 
 export const metadata: Metadata = {
   title: "Rastogi Cartridge | Genuine Cartridges, Printers, Electronics & Accessories",

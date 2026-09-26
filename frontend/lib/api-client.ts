@@ -1,4 +1,15 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001/api/v1";
+export function getApiBaseUrl(): string {
+  if (typeof window === "undefined") {
+    // Running on Server Side (Node.js inside ecom_frontend container or server)
+    return (
+      process.env.INTERNAL_API_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      "http://web:8000/api/v1"
+    );
+  }
+  // Running on Client Side (Browser)
+  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+}
 
 // Secure In-Memory Token Storage (RAM ONLY - Protected against XSS Attacks)
 let inMemoryAccessToken: string | null = null;
@@ -24,7 +35,8 @@ export async function fetchApi<T = unknown>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const baseUrl = getApiBaseUrl();
+  const url = endpoint.startsWith("http") ? endpoint : `${baseUrl}${endpoint}`;
 
   const headers = new Headers(options.headers || {});
   if (!headers.has("Content-Type") && !(options.body instanceof FormData)) {
@@ -51,7 +63,7 @@ export async function fetchApi<T = unknown>(
     !endpoint.includes("/users/token/refresh/")
   ) {
     try {
-      const refreshRes = await fetch(`${API_BASE_URL}/users/token/refresh/`, {
+      const refreshRes = await fetch(`${baseUrl}/users/token/refresh/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

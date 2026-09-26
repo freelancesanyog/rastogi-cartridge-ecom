@@ -6,7 +6,7 @@ import { fetchApi } from "@/lib/api-client";
 import { generateBreadcrumbJsonLd } from "@/lib/seo";
 import { getImageUrl } from "@/lib/utils";
 
-export const revalidate = 60; // ISR 60 seconds
+export const revalidate = 0; // Dynamic fetch for instant admin updates
 
 interface CatalogPageProps {
   searchParams: Promise<{ [key: string]: string | undefined }> | { [key: string]: string | undefined };

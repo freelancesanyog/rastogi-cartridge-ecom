@@ -41,7 +41,7 @@ export const useAuthStore = create<AuthState>()(
           // Attempt to refresh in-memory access token via HttpOnly refresh cookie if needed
           if (!currentToken) {
             const refreshRes = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001/api/v1"}/users/token/refresh/`,
+              `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"}/users/token/refresh/`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

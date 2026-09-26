@@ -58,7 +58,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
             if request:
                 ret["image"] = request.build_absolute_uri(ret["image"])
             else:
-                ret["image"] = f"http://localhost:8001{ret['image']}"
+                ret["image"] = f"http://localhost:8000{ret['image']}"
         return ret
 
 

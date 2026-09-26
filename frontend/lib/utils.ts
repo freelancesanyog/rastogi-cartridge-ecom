@@ -10,6 +10,6 @@ export function getImageUrl(url?: string | null): string {
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
   const baseUrl = process.env.NEXT_PUBLIC_API_URL
     ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/v1\/?$/, "")
-    : "http://localhost:8001";
+    : "http://localhost:8000";
   return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
 }
