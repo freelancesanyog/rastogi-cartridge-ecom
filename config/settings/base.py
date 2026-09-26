@@ -30,6 +30,7 @@ SECRET_KEY = env("SECRET_KEY", default="django-insecure-fallback-key-change-in-e
 DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Custom User Model
 AUTH_USER_MODEL = "users.User"
