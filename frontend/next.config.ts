@@ -35,6 +35,14 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.onrender.com",
+      },
+      {
+        protocol: "https",
         hostname: "**.r2.cloudflarestorage.com",
       },
       {

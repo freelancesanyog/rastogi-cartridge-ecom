@@ -57,8 +57,6 @@ class ProductImageSerializer(serializers.ModelSerializer):
             request = self.context.get("request")
             if request:
                 ret["image"] = request.build_absolute_uri(ret["image"])
-            else:
-                ret["image"] = f"http://localhost:8000{ret['image']}"
         return ret
 
 

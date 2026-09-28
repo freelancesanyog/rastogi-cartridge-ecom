@@ -1,10 +1,10 @@
 export function getApiBaseUrl(): string {
   if (typeof window === "undefined") {
-    // Running on Server Side (Node.js inside ecom_frontend container or server)
+    // Running on Server Side (SSR / Node.js)
     return (
       process.env.INTERNAL_API_URL ||
       process.env.NEXT_PUBLIC_API_URL ||
-      "http://web:8000/api/v1"
+      "http://localhost:8000/api/v1"
     );
   }
   // Running on Client Side (Browser)
